@@ -1,0 +1,12 @@
+@import "../../styles/layout.css";
+
+.album-back-link {
+  display: inline-block;
+  margin-bottom: var(--space-5);
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+}
+
+.album-back-link:hover {
+  color: var(--color-accent);
+}

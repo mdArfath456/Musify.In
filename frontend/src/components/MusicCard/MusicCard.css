@@ -1,0 +1,112 @@
+.music-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 2px solid transparent;
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.music-card:hover,
+.music-card:focus-within {
+  border-color: var(--color-accent);
+}
+
+.music-card.active {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  border-left-color: var(--color-accent);
+}
+
+.music-card-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 14px var(--space-4);
+  color: var(--color-text);
+}
+
+.music-card-index {
+  font-family: var(--font-mono);
+  color: var(--color-text-faint);
+  font-size: 13px;
+  width: 22px;
+  flex-shrink: 0;
+}
+
+.music-card.active .music-card-index {
+  color: var(--color-accent);
+}
+
+.music-card-body {
+  min-width: 0;
+}
+
+.music-card-title {
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-card-artist {
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+.music-card-artist-link {
+  display: inline-block;
+  transition: color 0.15s ease;
+}
+
+.music-card-artist-link:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.music-card-like {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-text-faint);
+  padding: var(--space-3) var(--space-4);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.music-card-like:hover {
+  color: var(--color-danger);
+  transform: scale(1.1);
+}
+
+.music-card-like.liked {
+  color: var(--color-danger);
+}
+
+.music-card-similar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--color-text-faint);
+  padding: var(--space-3) var(--space-2);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.music-card-similar:hover {
+  color: var(--color-accent);
+  transform: scale(1.15);
+}

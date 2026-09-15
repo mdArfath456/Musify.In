@@ -1,0 +1,71 @@
+@import "../../styles/layout.css";
+
+.studio-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-5);
+  max-width: 1080px;
+}
+
+@media (max-width: 480px) {
+  .studio-body {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .studio-panel {
+    padding: var(--space-4);
+  }
+}
+
+.studio-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.studio-panel-title {
+  font-size: 18px;
+  margin-bottom: var(--space-2);
+}
+
+.studio-panel-hint {
+  font-size: 13px;
+  margin-bottom: var(--space-5);
+}
+
+.studio-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.studio-empty-hint {
+  font-size: 13px;
+  color: var(--color-text-faint);
+  font-style: italic;
+}
+
+.studio-track-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+
+.studio-track-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 13.5px;
+}
+
+.success-text {
+  color: var(--color-success);
+  font-size: 13px;
+}

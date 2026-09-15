@@ -1,0 +1,60 @@
+@import "../../styles/layout.css";
+
+.ai-form {
+    display: flex;
+    gap: var(--space-3);
+    max-width: 640px;
+    margin-bottom: var(--space-4);
+}
+
+.ai-form input {
+    flex: 1;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    color: var(--color-text);
+    font-size: 14.5px;
+}
+
+.ai-form input:focus {
+    border-color: var(--color-accent);
+}
+
+.ai-form input::placeholder {
+    color: var(--color-text-faint);
+}
+
+.ai-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+}
+
+.ai-preset-chip {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 13px;
+    color: var(--color-text-faint);
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.ai-preset-chip:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.ai-results-heading {
+    font-size: 13px;
+    color: var(--color-text-faint);
+    margin-bottom: var(--space-4);
+}
+
+@media (max-width: 480px) {
+    .ai-form {
+        flex-direction: column;
+    }
+}
