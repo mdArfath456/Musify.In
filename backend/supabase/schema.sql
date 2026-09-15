@@ -10,7 +10,7 @@
 create extension if not exists pgcrypto; -- for gen_random_uuid()
 
 -- ---------- users ----------
-create table if not exists users (
+create table if not exists public.users (
   id uuid primary key default gen_random_uuid(),
   username text not null unique,
   email text not null unique,
@@ -29,7 +29,7 @@ create table if not exists users (
 );
 
 -- ---------- tracks (was "music") ----------
-create table if not exists tracks (
+create table if not exists public.tracks (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   artist_id uuid not null references users(id) on delete cascade,
@@ -51,21 +51,21 @@ create unique index if not exists tracks_youtube_video_id_unique
   on tracks (youtube_video_id) where source = 'youtube';
 
 -- ---------- albums ----------
-create table if not exists albums (
+create table if not exists public.albums (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   artist_id uuid not null references users(id) on delete cascade,
   created_at timestamptz not null default now()
 );
 
-create table if not exists album_tracks (
+create table if not exists public.album_tracks (
   album_id uuid not null references albums(id) on delete cascade,
   track_id uuid not null references tracks(id) on delete cascade,
   primary key (album_id, track_id)
 );
 
 -- ---------- likes ----------
-create table if not exists likes (
+create table if not exists public.likes (
   user_id uuid not null references users(id) on delete cascade,
   track_id uuid not null references tracks(id) on delete cascade,
   created_at timestamptz not null default now(),
@@ -73,7 +73,7 @@ create table if not exists likes (
 );
 
 -- ---------- recently played ----------
-create table if not exists recently_played (
+create table if not exists public.recently_played (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references users(id) on delete cascade,
   track_id uuid not null references tracks(id) on delete cascade,

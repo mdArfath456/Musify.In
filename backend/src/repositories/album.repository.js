@@ -1,8 +1,8 @@
 const supabase = require("../db/supabaseClient")
 
-const WITH_ARTIST = "*, artist:users(id, username, email)"
+const WITH_ARTIST = "*, artist:users!albums_artist_id_fkey(id, username, email)"
 const WITH_ARTIST_AND_TRACKS =
-    "*, artist:users(id, username, email), album_tracks(track:tracks(*, artist:users(id, username, email)))"
+    "*, artist:users!albums_artist_id_fkey(id, username, email), album_tracks(track:tracks(*, artist:users!tracks_artist_id_fkey(id, username, email)))"
 
 function flattenTracks(row) {
     if (!row) return row

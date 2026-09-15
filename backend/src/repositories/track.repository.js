@@ -1,6 +1,6 @@
 const supabase = require("../db/supabaseClient")
 
-const WITH_ARTIST = "*, artist:users(id, username, email)"
+const WITH_ARTIST = "*, artist:users!tracks_artist_id_fkey(id, username, email)"
 
 async function create({ title, artistId, uri }) {
     const { data, error } = await supabase

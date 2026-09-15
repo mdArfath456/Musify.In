@@ -10,7 +10,11 @@ const connectDB = async () => {
         if (error) throw error
         console.log("connected to Supabase")
     } catch (error) {
-        console.log("Supabase connection check failed:", error.message)
+        console.error(
+            "Supabase connection check failed:",
+            error.message,
+            "Run backend/supabase/schema.sql in the connected Supabase project's SQL Editor."
+        )
     }
 }
 

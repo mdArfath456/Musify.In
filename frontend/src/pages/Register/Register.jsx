@@ -256,10 +256,12 @@ function RegisterForm() {
             </div>
           </div>
 
-          <label className="auth-checkbox-row">
+          <div className="auth-checkbox-row">
             <input type="checkbox" checked={form.acceptedTerms} onChange={update("acceptedTerms")} />
-            <span>I agree to the Terms &amp; Conditions</span>
-          </label>
+            <span>
+              I agree to the <Link className="auth-inline-link" to="/terms">Terms &amp; Conditions</Link>
+            </span>
+          </div>
           {errors.acceptedTerms && <p className="field-error">✗ {errors.acceptedTerms}</p>}
 
           <button className="btn btn-primary auth-submit" type="submit" disabled={submitting}>

@@ -191,7 +191,7 @@ async function recordRecentlyPlayed(userId, trackId) {
 async function getRecentlyPlayed(userId, limit = 20) {
     const { data, error } = await supabase
         .from("recently_played")
-        .select("played_at, track:tracks(*, artist:users(id, username, email))")
+        .select("played_at, track:tracks(*, artist:users!tracks_artist_id_fkey(id, username, email))")
         .eq("user_id", userId)
         .order("played_at", { ascending: false })
         .limit(limit)

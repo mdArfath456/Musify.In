@@ -19,6 +19,7 @@ import OnlineSearch from "./pages/OnlineSearch/OnlineSearch";
 import VerifyOtp from "./pages/VerifyOtp/VerifyOtp";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword/ResetPassword";
+import Terms from "./pages/Terms/Terms";
 
 function AppShell({ children }) {
   return (
@@ -33,107 +34,27 @@ function AppShell({ children }) {
 export default function App() {
   const { user } = useAuth();
 
-  return (
+  const routes = (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/library" replace /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to="/library" replace /> : <Register />} />
       <Route path="/verify-otp" element={<VerifyOtp />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-
-      <Route
-        path="/library"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <Library />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/albums"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <Albums />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/albums/:albumId"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <AlbumDetail />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/studio"
-        element={
-          <ProtectedRoute role="artist">
-            <AppShell>
-              <Studio />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/liked"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <LikedSongs />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/recent"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <RecentlyPlayed />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/artists/:artistId"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <ArtistProfile />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/ai"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <AIAssistant />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/online"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <OnlineSearch />
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-
+      <Route path="/library" element={<ProtectedRoute><AppShell><Library /></AppShell></ProtectedRoute>} />
+      <Route path="/albums" element={<ProtectedRoute><AppShell><Albums /></AppShell></ProtectedRoute>} />
+      <Route path="/albums/:albumId" element={<ProtectedRoute><AppShell><AlbumDetail /></AppShell></ProtectedRoute>} />
+      <Route path="/studio" element={<ProtectedRoute role="artist"><AppShell><Studio /></AppShell></ProtectedRoute>} />
+      <Route path="/liked" element={<ProtectedRoute><AppShell><LikedSongs /></AppShell></ProtectedRoute>} />
+      <Route path="/recent" element={<ProtectedRoute><AppShell><RecentlyPlayed /></AppShell></ProtectedRoute>} />
+      <Route path="/artists/:artistId" element={<ProtectedRoute><AppShell><ArtistProfile /></AppShell></ProtectedRoute>} />
+      <Route path="/ai" element={<ProtectedRoute><AppShell><AIAssistant /></AppShell></ProtectedRoute>} />
+      <Route path="/online" element={<ProtectedRoute><AppShell><OnlineSearch /></AppShell></ProtectedRoute>} />
+      <Route path="/terms" element={<Terms />} />
       <Route path="/" element={<Navigate to={user ? "/library" : "/login"} replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
+
+  return routes;
 }
