@@ -1,4 +1,10 @@
 // Central app configuration.
-// Use Vercel's same-origin rewrite in production; local development can still
-// override this with VITE_API_URL in a .env file.
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+// Accept either a same-origin `/api` value or a deployed backend origin so a
+// hosting provider cannot accidentally drop the backend's `/api` prefix.
+const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/+$/, "");
+
+export const API_BASE_URL = configuredApiUrl
+	? configuredApiUrl.endsWith("/api")
+		? configuredApiUrl
+		: `${configuredApiUrl}/api`
+	: "/api";
