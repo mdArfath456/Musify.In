@@ -1,0 +1,128 @@
+.music-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 2px solid transparent;
+  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s var(--ease-smooth), background 0.2s var(--ease-smooth), transform 0.2s var(--ease-smooth);
+}
+
+.music-card:hover,
+.music-card:focus-within {
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.music-card.active {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  border-left-color: var(--color-accent);
+}
+
+.music-card-main {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 10px var(--space-3);
+  color: var(--color-text);
+}
+
+.music-card-art {
+  position: relative;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  color: var(--color-accent-secondary);
+  background: linear-gradient(145deg, var(--color-surface-active), var(--color-accent-soft));
+}
+
+.music-card-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.music-card-playing {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent-secondary);
+  box-shadow: 0 0 0 4px rgba(255, 176, 92, 0.2);
+}
+
+.music-card-body {
+  min-width: 0;
+}
+
+.music-card-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-card-artist {
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.music-card-artist-link {
+  display: inline-block;
+  transition: color 0.15s ease;
+}
+
+.music-card-artist-link:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.music-card-like {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--color-text-faint);
+  padding: var(--space-3) var(--space-4);
+  transition: color 0.2s var(--ease-smooth), transform 0.2s var(--ease-spring);
+}
+
+.music-card-like:hover {
+  color: var(--color-danger);
+  transform: scale(1.1);
+}
+
+.music-card-like.liked {
+  color: var(--color-danger);
+}
+
+.music-card-similar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-faint);
+  padding: var(--space-3) var(--space-2);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.music-card-similar:hover {
+  color: var(--color-accent);
+  transform: scale(1.15);
+}

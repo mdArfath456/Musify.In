@@ -1,0 +1,43 @@
+.otp-verify-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.otp-verify-error {
+  text-align: center;
+}
+
+.otp-verify-checking {
+  text-align: center;
+  margin: -4px 0 0;
+}
+
+.otp-verify-body .auth-submit {
+  width: 100%;
+}
+
+.otp-resend-link {
+  background: none;
+  border: none;
+  color: var(--color-accent-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.9;
+  transition: opacity 0.15s ease;
+}
+
+.otp-resend-link:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.otp-resend-link:disabled {
+  cursor: default;
+  opacity: 0.55;
+  text-decoration: none;
+}

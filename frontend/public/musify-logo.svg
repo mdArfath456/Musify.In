@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Musify Logo</title>
+  <desc id="desc">Neon gradient music note forming an M with the word MUSIFY</desc>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3145ff"/>
+      <stop offset="38%" stop-color="#39cfff"/>
+      <stop offset="68%" stop-color="#a62cff"/>
+      <stop offset="100%" stop-color="#ff2b9a"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="180" fill="#050505"/>
+  <g fill="none" stroke="url(#grad)" stroke-width="82" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <path d="M275 520 V365 C275 315 315 285 350 315 L500 455 C525 478 552 478 575 455 L710 325"/>
+    <path d="M710 325 V585"/>
+  </g>
+  <circle cx="270" cy="650" r="88" fill="url(#grad)" filter="url(#glow)"/>
+  <circle cx="710" cy="675" r="88" fill="url(#grad)" filter="url(#glow)"/>
+  <g fill="url(#grad)">
+    <rect x="785" y="360" width="24" height="92" rx="12"/>
+    <rect x="830" y="315" width="24" height="182" rx="12"/>
+    <rect x="875" y="350" width="24" height="112" rx="12"/>
+    <rect x="920" y="385" width="24" height="72" rx="12"/>
+  </g>
+  <text x="512" y="855" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="112" font-weight="700" letter-spacing="12" fill="#ffffff">MUSIF</text>
+  <text x="838" y="855" font-family="Arial, Helvetica, sans-serif" font-size="112" font-weight="700" letter-spacing="0" fill="url(#grad)">Y</text>
+  <text x="512" y="912" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="25" letter-spacing="9" fill="#e8e8e8">MUSIC FOR A BETTER YOU</text>
+  <rect x="450" y="950" width="124" height="7" rx="4" fill="url(#grad)"/>
+</svg>
