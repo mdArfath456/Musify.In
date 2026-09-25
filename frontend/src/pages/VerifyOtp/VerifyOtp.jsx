@@ -13,6 +13,7 @@ const COPY = {
   "verify-email": {
     heading: "Verify your email",
     sub: (masked) => `We sent a 6-digit verification code to ${masked || "your email"}.`,
+    notice: "If you don't see the code, please check your spam or junk folder.",
     successMessage: "Email verified — you can sign in now.",
     submitLabel: "Verify email",
   },
@@ -119,6 +120,7 @@ export default function VerifyOtp() {
         </div>
         <h1 className="auth-heading">{copy.heading}</h1>
         <p className="auth-sub">{copy.sub(maskedEmail)}</p>
+        {copy.notice && <p className="otp-verify-notice">{copy.notice}</p>}
 
         <div className="otp-verify-body">
           <OtpInput value={otp} onChange={setOtp} disabled={submitting} error={Boolean(error)} />

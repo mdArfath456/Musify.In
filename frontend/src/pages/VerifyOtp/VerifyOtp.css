@@ -6,6 +6,15 @@
   margin-top: 6px;
 }
 
+.otp-verify-notice {
+  margin: -14px auto 18px;
+  max-width: 340px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .otp-verify-error {
   text-align: center;
 }
