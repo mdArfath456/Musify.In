@@ -76,7 +76,7 @@ export default function Library() {
 
         {!loading && !error && tracks.length > 0 && (
           <div className="library-search">
-            <SearchInput value={query} onChange={setQuery} placeholder="Search by track or artist..." />
+            <SearchInput value={query} onChange={setQuery} placeholder="Search songs, artists, or albums..." />
           </div>
         )}
 

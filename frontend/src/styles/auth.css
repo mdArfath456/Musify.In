@@ -160,6 +160,30 @@
   background: var(--color-accent-soft);
 }
 
+.role-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.auth-screen .role-option {
+  min-height: 40px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  transition: color 0.18s var(--ease-smooth), border-color 0.18s var(--ease-smooth), background 0.18s var(--ease-smooth), transform 0.18s var(--ease-smooth);
+}
+
+.auth-screen .role-option:hover { transform: translateY(-1px); }
+
+.auth-screen .role-option:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
 .auth-screen .field-hint,
 .auth-screen .field-error,
 .auth-screen .error-text { font-size: 11px; }

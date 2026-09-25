@@ -1,12 +1,12 @@
 .music-card {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   width: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-left: 2px solid transparent;
-  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-card);
   border-radius: var(--radius-md);
   transition: border-color 0.2s var(--ease-smooth), background 0.2s var(--ease-smooth), transform 0.2s var(--ease-smooth);
 }
@@ -21,6 +21,7 @@
   background: var(--color-accent-soft);
   border-color: var(--color-accent);
   border-left-color: var(--color-accent);
+  box-shadow: 0 10px 28px rgba(255, 118, 109, 0.12);
 }
 
 .music-card-main {
@@ -32,7 +33,7 @@
   text-align: left;
   background: transparent;
   border: none;
-  padding: 10px var(--space-3);
+  padding: 11px var(--space-3);
   color: var(--color-text);
 }
 
@@ -56,14 +57,35 @@
 }
 
 .music-card-playing {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
   position: absolute;
-  right: 5px;
-  bottom: 5px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  right: 4px;
+  bottom: 4px;
+  width: 22px;
+  height: 18px;
+  padding: 3px 4px;
+  border-radius: 5px;
+  background: rgba(11, 11, 18, 0.76);
+  box-shadow: 0 0 0 1px rgba(255, 176, 92, 0.24);
+}
+
+.music-card-playing i {
+  display: block;
+  width: 3px;
+  height: 7px;
+  border-radius: var(--radius-pill);
   background: var(--color-accent-secondary);
-  box-shadow: 0 0 0 4px rgba(255, 176, 92, 0.2);
+  animation: musicEqualizer 0.9s ease-in-out infinite alternate;
+}
+
+.music-card-playing i:nth-child(2) { height: 12px; animation-delay: 0.18s; }
+.music-card-playing i:nth-child(3) { height: 9px; animation-delay: 0.34s; }
+
+@keyframes musicEqualizer {
+  to { transform: scaleY(0.45); opacity: 0.65; }
 }
 
 .music-card-body {
@@ -101,6 +123,13 @@
   color: var(--color-text-faint);
   padding: var(--space-3) var(--space-4);
   transition: color 0.2s var(--ease-smooth), transform 0.2s var(--ease-spring);
+}
+
+.music-card-like:focus-visible,
+.music-card-similar:focus-visible,
+.music-card-main:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
 }
 
 .music-card-like:hover {

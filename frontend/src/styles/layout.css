@@ -1,14 +1,14 @@
 .page {
   flex: 1;
   min-height: 100vh;
-  padding-bottom: calc(var(--player-height) + var(--space-7));
+  padding-bottom: calc(var(--player-height-desktop) + var(--space-6));
   animation: fadeInUp 0.35s var(--ease-smooth);
 }
 
 .page-body {
   width: min(100%, var(--content-max-width));
   margin: 0 auto;
-  padding: 0 clamp(20px, 4vw, 64px) var(--space-6);
+  padding: 0 clamp(20px, 3.5vw, 56px) var(--space-6);
 }
 
 .track-list {
@@ -41,7 +41,7 @@
   }
 
   .page {
-    padding-bottom: calc(var(--player-height-mobile) + 72px);
+    padding-bottom: calc(var(--player-height-mobile) + var(--space-6));
   }
 
   .page-body {

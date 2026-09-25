@@ -1,8 +1,8 @@
 .search-input {
     position: relative;
     display: flex;
+    width: 100%;
     align-items: center;
-    max-width: 420px;
 }
 
 .search-input-icon {
@@ -24,14 +24,17 @@
     background: var(--color-surface-raised);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-pill);
-    padding: 11px 38px;
+    min-height: 44px;
+    padding: 11px 40px;
     color: var(--color-text);
     font-size: 13px;
-    transition: border-color 0.15s ease;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .search-input input:focus {
     border-color: var(--color-accent);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 
 .search-input input::placeholder {

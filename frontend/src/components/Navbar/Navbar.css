@@ -2,7 +2,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: var(--space-6) clamp(20px, 4vw, 64px) var(--space-5);
+  gap: var(--space-5);
+  padding: var(--space-6) clamp(20px, 3.5vw, 56px) var(--space-5);
 }
 
 @media (max-width: 768px) {
@@ -29,12 +30,14 @@
 .navbar-subtitle {
   margin-top: var(--space-1);
   font-size: 14px;
+  line-height: 1.45;
 }
 
 .navbar-user {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .navbar-user-avatar {

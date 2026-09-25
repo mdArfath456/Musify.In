@@ -12,10 +12,14 @@ export default function MusicCard({ track, index, queue }) {
 
   return (
     <div className={`music-card ${isCurrent ? "active" : ""}`}>
-      <button className="music-card-main" onClick={() => playTrack(track, queue)}>
+      <button className="music-card-main" onClick={() => playTrack(track, queue)} aria-label={`Play ${track.title}`}>
         <span className="music-card-art">
           {track.thumbnail ? <img src={track.thumbnail} alt="" loading="lazy" /> : <Music2 size={19} />}
-          {isCurrent && isPlaying && <span className="music-card-playing" aria-label="Playing" />}
+          {isCurrent && isPlaying && (
+            <span className="music-card-playing" aria-label="Playing">
+              <i /><i /><i />
+            </span>
+          )}
         </span>
         <div className="music-card-body">
           <p className="music-card-title">{track.title}</p>
