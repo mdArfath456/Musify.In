@@ -8,6 +8,11 @@ function normalizeAuthError(err) {
   const normalized = new Error(message);
   normalized.fieldErrors = data?.errors || null;
   normalized.status = err?.response?.status || null;
+  normalized.requiresOtp = Boolean(data?.requiresOtp);
+  normalized.emailDeliveryFailed = Boolean(data?.emailDeliveryFailed);
+  normalized.email = data?.email || null;
+  normalized.maskedEmail = data?.maskedEmail || null;
+  normalized.purpose = data?.purpose || null;
   return normalized;
 }
 

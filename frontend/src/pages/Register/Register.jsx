@@ -141,6 +141,18 @@ function RegisterForm() {
       });
     } catch (err) {
       if (err.fieldErrors) setErrors(err.fieldErrors);
+      if (err.emailDeliveryFailed && err.requiresOtp && err.email) {
+        showToast(err.message, { type: "error" });
+        navigate("/verify-otp", {
+          replace: true,
+          state: {
+            email: err.email,
+            maskedEmail: err.maskedEmail,
+            purpose: err.purpose || "verify-email"
+          }
+        });
+        return;
+      }
       showToast(err.message || "Could not create account", { type: "error" });
     } finally {
       setSubmitting(false);

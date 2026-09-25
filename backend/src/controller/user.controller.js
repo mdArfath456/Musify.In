@@ -121,9 +121,19 @@ const registerUser = async (req, res) => {
             otpExpiry: otpExpiryDate()
         })
 
-        sendOtpEmail(user.email, otp, "verify-email").catch((err) => {
+        try {
+            await sendOtpEmail(user.email, otp, "verify-email")
+        } catch (err) {
             console.error("Failed to send verification OTP email:", err.message)
-        })
+            return res.status(502).json({
+                message: "Your account was created, but we could not deliver the OTP. Please use resend code.",
+                requiresOtp: true,
+                emailDeliveryFailed: true,
+                purpose: "verify-email",
+                email: user.email,
+                maskedEmail: maskEmail(user.email)
+            })
+        }
 
         return res.status(201).json({
             message: "Account created. We've sent a verification code to your email.",
@@ -232,9 +242,12 @@ const resendOtp = async (req, res) => {
             otpAttempts: 0
         })
 
-        sendOtpEmail(user.email, otp, purpose).catch((err) => {
+        try {
+            await sendOtpEmail(user.email, otp, purpose)
+        } catch (err) {
             console.error("Failed to send OTP email:", err.message)
-        })
+            return res.status(502).json({ message: "We could not deliver the OTP. Please try again." })
+        }
 
         return res.status(200).json(generic)
     } catch (error) {
@@ -293,9 +306,19 @@ const userLogin = async (req, res) => {
                 otpExpiry: otpExpiryDate(),
                 otpAttempts: 0
             })
-            sendOtpEmail(withOtp.email, otp, "verify-email").catch((err) => {
+            try {
+                await sendOtpEmail(withOtp.email, otp, "verify-email")
+            } catch (err) {
                 console.error("Failed to send verification OTP email:", err.message)
-            })
+                return res.status(502).json({
+                    message: "We could not deliver the verification OTP. Please try again.",
+                    requiresOtp: true,
+                    emailDeliveryFailed: true,
+                    purpose: "verify-email",
+                    email: withOtp.email,
+                    maskedEmail: maskEmail(withOtp.email)
+                })
+            }
             return res.status(403).json({
                 message: "Please verify your email to continue.",
                 requiresOtp: true,
@@ -313,9 +336,19 @@ const userLogin = async (req, res) => {
                 otpExpiry: otpExpiryDate(),
                 otpAttempts: 0
             })
-            sendOtpEmail(withOtp.email, otp, "first-login").catch((err) => {
+            try {
+                await sendOtpEmail(withOtp.email, otp, "first-login")
+            } catch (err) {
                 console.error("Failed to send first-login OTP email:", err.message)
-            })
+                return res.status(502).json({
+                    message: "We could not deliver the first-login OTP. Please try again.",
+                    requiresOtp: true,
+                    emailDeliveryFailed: true,
+                    purpose: "first-login",
+                    email: withOtp.email,
+                    maskedEmail: maskEmail(withOtp.email)
+                })
+            }
             return res.status(200).json({
                 message: "We've sent a one-time verification code to your email.",
                 requiresOtp: true,
