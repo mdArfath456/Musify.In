@@ -65,7 +65,6 @@ export default function PlayerBar() {
   }
 
   const pct = safeDuration ? (safeProgress / safeDuration) * 100 : 0;
-  const ticks = Array.from({ length: 40 });
   const ephemeral = isEphemeralId(track._id);
   const liked = !ephemeral && isLiked(track._id);
   const artworkUrl = typeof track.thumbnail === "string" && track.thumbnail.trim() ? track.thumbnail : null;
@@ -148,14 +147,17 @@ export default function PlayerBar() {
 
   return (
     <div className="player-bar">
-      {hasArtwork && (
-        <img className="player-background" src={artworkUrl} alt="" aria-hidden="true" onError={() => setArtworkFailed(true)} />
-      )}
-      <div className="player-overlay" />
+      <div className="player-card">
+        {hasArtwork && (
+          <img className="player-ambient" src={artworkUrl} alt="" aria-hidden="true" onError={() => setArtworkFailed(true)} />
+        )}
+        <div className="player-ambient-overlay" />
 
-      <div className="player-content">
-        <div className="player-track-info">
-          <div className="player-artwork-shell">
+        <div className="player-card-inner">
+          <p className="player-eyebrow">Now Playing</p>
+
+          <div className="player-main">
+            <div className={`player-artwork-shell ${isPlaying ? "is-playing" : ""}`}>
             {hasArtwork ? (
               <img
                 className="player-artwork"
@@ -166,57 +168,58 @@ export default function PlayerBar() {
             ) : (
               <div className="player-artwork player-artwork-fallback" aria-label="Musify artwork"><Music2 size={25} /></div>
             )}
-          </div>
-          <div className="player-track-copy">
-            <p className="player-track-title" title={track.title}>{track.title || "Untitled track"}</p>
-            <p className="player-track-artist">{track.artist?.username || track.channelTitle || "Unknown artist"}</p>
-          </div>
-          <button
-            className={`player-like ${liked ? "liked" : ""} ${ephemeral ? "player-like-add" : ""}`}
-            onClick={handleLikeClick}
-            disabled={adding}
-            aria-label={ephemeral ? "Add to Liked Songs" : liked ? "Unlike" : "Like"}
-            title={ephemeral ? "Add to Liked Songs" : liked ? "Unlike" : "Like"}
-          >
-            {ephemeral ? (adding ? "..." : <Plus size={19} />) : <Heart size={19} fill={liked ? "currentColor" : "none"} />}
-          </button>
-        </div>
-
-        <div className="player-scrub-row">
-          <span className="player-counter">{formatCounter(safeProgress)}</span>
-          <div
-            ref={timelineRef}
-            className={`player-scrub ${isSeeking ? "seeking" : ""}`}
-            onPointerDown={handleTimelinePointerDown}
-            onPointerMove={handleTimelinePointerMove}
-            onPointerUp={(event) => finishSeeking(event, true)}
-            onPointerCancel={(event) => finishSeeking(event, false)}
-            onKeyDown={handleTimelineKeyDown}
-            role="slider"
-            tabIndex={safeDuration ? 0 : -1}
-            aria-label="Song progress"
-            aria-valuemin="0"
-            aria-valuemax={safeDuration}
-            aria-valuenow={safeProgress}
-            aria-valuetext={`${formatCounter(safeProgress)} of ${formatCounter(safeDuration)}`}
-          >
-            <div className="player-scrub-ticks">
-              {ticks.map((_, index) => <span key={index} className="player-tick" />)}
             </div>
-            <div className="player-scrub-fill" style={{ width: `${pct}%` }} />
-            <div className="player-scrub-head" style={{ left: `${pct}%` }} />
-          </div>
-          <span className="player-counter">{formatCounter(safeDuration)}</span>
-        </div>
 
-        <div className="player-controls">
-          <div className="player-buttons">
-            <button className="player-btn" onClick={playPrev} aria-label="Previous track" title="Previous track">⏮</button>
-            <button className="player-btn player-btn-main" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
-              {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}
-            </button>
-            <button className="player-btn" onClick={playNext} aria-label="Next track" title="Next track">⏭</button>
-            <button className="player-btn" onClick={playNext} aria-label="Next track" title="Next track"><SkipForward size={20} /></button>
+            <div className="player-info-row">
+              <div className="player-track-copy">
+                <p className="player-track-title" title={track.title}>{track.title || "Untitled track"}</p>
+                <p className="player-track-artist">{track.artist?.username || track.channelTitle || "Unknown artist"}</p>
+              </div>
+              <button
+                className={`player-like ${liked ? "liked" : ""} ${ephemeral ? "player-like-add" : ""}`}
+                onClick={handleLikeClick}
+                disabled={adding}
+                aria-label={ephemeral ? "Add to Liked Songs" : liked ? "Unlike" : "Like"}
+                title={ephemeral ? "Add to Liked Songs" : liked ? "Unlike" : "Like"}
+              >
+                {ephemeral ? (adding ? "..." : <Plus size={19} />) : <Heart size={19} fill={liked ? "currentColor" : "none"} />}
+              </button>
+            </div>
+
+            <div className="player-progress">
+              <div
+                ref={timelineRef}
+                className={`player-scrub ${isSeeking ? "seeking" : ""}`}
+                onPointerDown={handleTimelinePointerDown}
+                onPointerMove={handleTimelinePointerMove}
+                onPointerUp={(event) => finishSeeking(event, true)}
+                onPointerCancel={(event) => finishSeeking(event, false)}
+                onKeyDown={handleTimelineKeyDown}
+                role="slider"
+                tabIndex={safeDuration ? 0 : -1}
+                aria-label="Seek"
+                aria-valuemin="0"
+                aria-valuemax={safeDuration}
+                aria-valuenow={safeProgress}
+                aria-valuetext={`${formatCounter(safeProgress)} of ${formatCounter(safeDuration)}`}
+              >
+                <div className="player-scrub-track" />
+                <div className="player-scrub-fill" style={{ width: `${pct}%` }} />
+                <div className="player-scrub-head" style={{ left: `${pct}%` }} />
+              </div>
+              <div className="player-time-row">
+                <span className="player-counter">{formatCounter(safeProgress)}</span>
+                <span className="player-counter">{formatCounter(safeDuration)}</span>
+              </div>
+            </div>
+
+            <div className="player-controls">
+              <button className="player-btn" onClick={playPrev} aria-label="Previous track" title="Previous track"><SkipBack size={20} /></button>
+              <button className="player-btn player-btn-main" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
+                {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}
+              </button>
+              <button className="player-btn" onClick={playNext} aria-label="Next track" title="Next track"><SkipForward size={20} /></button>
+            </div>
           </div>
         </div>
       </div>
