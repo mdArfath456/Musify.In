@@ -8,10 +8,12 @@ html,
 body,
 #root {
   height: 100%;
+  overflow-x: hidden;
 }
 
 html {
   scroll-behavior: smooth;
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -22,6 +24,7 @@ body {
     var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
 }
 
