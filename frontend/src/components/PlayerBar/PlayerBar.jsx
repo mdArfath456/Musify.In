@@ -158,16 +158,16 @@ export default function PlayerBar() {
 
           <div className="player-main">
             <div className={`player-artwork-shell ${isPlaying ? "is-playing" : ""}`}>
-            {hasArtwork ? (
-              <img
-                className="player-artwork"
-                src={artworkUrl}
-                alt={`${track.title || "Song"} artwork`}
-                onError={() => setArtworkFailed(true)}
-              />
-            ) : (
-              <div className="player-artwork player-artwork-fallback" aria-label="Musify artwork"><Music2 size={25} /></div>
-            )}
+              {hasArtwork ? (
+                <img
+                  className="player-artwork"
+                  src={artworkUrl}
+                  alt={`${track.title || "Song"} artwork`}
+                  onError={() => setArtworkFailed(true)}
+                />
+              ) : (
+                <div className="player-artwork player-artwork-fallback" aria-label="Musify artwork"><Music2 size={25} /></div>
+              )}
             </div>
 
             <div className="player-info-row">
