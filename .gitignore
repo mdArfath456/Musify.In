@@ -10,6 +10,18 @@ node_modules/
 dist/
 build/
 
+# Android generated/local files
+.gradle/
+.idea/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Android build output
+**/build/
+
 # Local editor and OS files
 .vscode/
 .DS_Store
+Thumbs.db
