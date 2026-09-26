@@ -47,7 +47,7 @@
   --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.28);
   --shadow-card: 0 14px 34px rgba(0, 0, 0, 0.2);
   --player-height-desktop: 96px;
-  --player-height-mobile: 76px;
+  --player-height-mobile: 84px;
   --player-height: var(--player-height-desktop);
   --sidebar-width: 236px;
   --content-max-width: 1500px;

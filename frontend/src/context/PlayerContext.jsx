@@ -35,12 +35,16 @@ export function PlayerProvider({ children }) {
   const pendingVideoRef = useRef(null); // { videoId, seekTo, autoplay } — queued until the iframe API finishes loading
   const progressRef = useRef(0);
   const playNextRef = useRef(() => {});
+  const volumeRef = useRef(0.8);
+  const mutedRef = useRef(false);
 
   const [track, setTrack] = useState(null);
   const [queue, setQueue] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0); // seconds
   const [duration, setDuration] = useState(0);
+  const [volume, setVolumeState] = useState(0.8);
+  const [isMuted, setIsMuted] = useState(false);
 
   const engine = track?.source === "youtube" ? "youtube" : "upload";
 
@@ -60,6 +64,8 @@ export function PlayerProvider({ children }) {
         events: {
           onReady: () => {
             ytReadyRef.current = true;
+            ytPlayerRef.current.setVolume(Math.round(volumeRef.current * 100));
+            if (mutedRef.current) ytPlayerRef.current.mute();
             const pending = pendingVideoRef.current;
             if (!pending) return;
             if (pending.autoplay) {
@@ -260,6 +266,32 @@ export function PlayerProvider({ children }) {
     [engine]
   );
 
+  const applyVolume = useCallback(() => {
+    const audio = audioRef.current;
+    audio.volume = volumeRef.current;
+    audio.muted = mutedRef.current;
+    if (!ytReadyRef.current || !ytPlayerRef.current) return;
+    ytPlayerRef.current.setVolume(Math.round(volumeRef.current * 100));
+    if (mutedRef.current) ytPlayerRef.current.mute();
+    else ytPlayerRef.current.unMute();
+  }, []);
+
+  const setVolume = useCallback((nextVolume) => {
+    const normalized = Math.min(1, Math.max(0, Number(nextVolume) || 0));
+    volumeRef.current = normalized;
+    mutedRef.current = normalized === 0;
+    setVolumeState(normalized);
+    setIsMuted(normalized === 0);
+    applyVolume();
+  }, [applyVolume]);
+
+  const toggleMute = useCallback(() => {
+    const nextMuted = !mutedRef.current;
+    mutedRef.current = nextMuted;
+    setIsMuted(nextMuted);
+    applyVolume();
+  }, [applyVolume]);
+
   const playNext = useCallback(() => {
     if (!track || queue.length === 0) return;
     const idx = queue.findIndex((t) => t._id === track._id);
@@ -305,6 +337,8 @@ export function PlayerProvider({ children }) {
         isPlaying,
         progress,
         duration,
+        volume,
+        isMuted,
         engine,
         playTrack,
         stopPlayback,
@@ -312,6 +346,8 @@ export function PlayerProvider({ children }) {
         seek,
         playNext,
         playPrev,
+        setVolume,
+        toggleMute,
         markCurrentTrackAdded
       }}
     >

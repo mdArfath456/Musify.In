@@ -41,7 +41,7 @@
   }
 
   .page {
-    padding-bottom: calc(var(--player-height-mobile) + var(--space-6));
+    padding-bottom: calc(var(--player-height-mobile) + var(--space-6) + env(safe-area-inset-bottom));
   }
 
   .page-body {

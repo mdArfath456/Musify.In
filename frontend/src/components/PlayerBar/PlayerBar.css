@@ -304,18 +304,7 @@
 
 @media (max-width: 768px) {
   .player-bar,
-  .player-bar-empty {
-    left: 0;
-    padding: 8px max(3%, env(safe-area-inset-left)) max(8px, env(safe-area-inset-bottom)) max(3%, env(safe-area-inset-right));
-  }
-
-  .player-card { width: 100%; max-width: 100%; border-radius: var(--radius-md); }
-  .player-card-inner { padding: 10px 12px 12px; }
-  .player-main { grid-template-columns: 48px 1fr; column-gap: 12px; }
-  .player-artwork-shell { width: 48px; height: 48px; }
-  .player-track-title { font-size: 14px; }
-  .player-controls { gap: 14px; }
-  .player-btn-main { width: 44px; height: 44px; }
+  .player-bar-empty { display: none; }
 }
 
 @media (max-width: 380px) {
