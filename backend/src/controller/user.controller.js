@@ -27,8 +27,6 @@ function maskEmail(email) {
 }
 
 const BCRYPT_ROUNDS = 12
-const MAX_FAILED_ATTEMPTS = 5
-const LOCK_DURATION_MS = 15 * 60 * 1000
 const REMEMBER_ME_DAYS = 30
 const DEFAULT_SESSION_DAYS = 7
 const isProduction = process.env.NODE_ENV === "production"
@@ -200,8 +198,7 @@ const verifyOtp = async (req, res) => {
             otpHash: null,
             otpPurpose: null,
             otpExpiry: null,
-            otpAttempts: 0,
-            failedLoginAttempts: 0
+            otpAttempts: 0
         })
 
         issueSessionCookie(res, updated, Boolean(rememberMe))
@@ -275,28 +272,10 @@ const userLogin = async (req, res) => {
 
         if (!user) return genericFailure()
 
-        if (user.lockUntil && user.lockUntil > new Date()) {
-            const minutesLeft = Math.ceil((user.lockUntil - new Date()) / 60000)
-            return res.status(423).json({
-                message: `Too many failed attempts. Try again in ${minutesLeft} minute${minutesLeft === 1 ? "" : "s"}.`
-            })
-        }
-
         const isPasswordValid = await bcrypt.compare(password, user.password)
-        if (!isPasswordValid) {
-            const failedLoginAttempts = user.failedLoginAttempts + 1
-            const patch = { failedLoginAttempts }
-            if (failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
-                patch.lockUntil = new Date(Date.now() + LOCK_DURATION_MS)
-                patch.failedLoginAttempts = 0
-            }
-            await userRepository.updateById(user.id, patch)
-            return genericFailure()
-        }
+        if (!isPasswordValid) return genericFailure()
 
-        // Credentials are correct from here on, so failed-attempt tracking
-        // resets regardless of which verification step comes next.
-        const afterPassword = await userRepository.updateById(user.id, { failedLoginAttempts: 0 })
+        const afterPassword = user
 
         if (!afterPassword.isVerified) {
             const otp = generateOtp()
