@@ -25,6 +25,12 @@ export default function Login() {
         rememberMe,
       });
 
+      console.log("LOGIN RESPONSE:", {
+        requiresOtp: Boolean(data?.requiresOtp),
+        hasUser: Boolean(data?.user),
+        role: data?.user?.role
+      });
+
       if (data?.requiresOtp) {
         navigate("/verify-otp", {
           state: {
@@ -38,13 +44,18 @@ export default function Login() {
       }
 
       if (!data?.user) {
+        console.error("LOGIN RESPONSE DOES NOT CONTAIN USER");
+
         throw new Error(
           data?.message || "Login succeeded, but no user information was returned."
         );
       }
 
+      console.log("LOGIN USER ROLE:", data.user.role);
+
       navigate(data.user.role === "artist" ? "/studio" : "/library");
     } catch (err) {
+      console.error("LOGIN ERROR:", err.message);
       setError(err.message || "Something went wrong. Try again.");
     } finally {
       setSubmitting(false);
