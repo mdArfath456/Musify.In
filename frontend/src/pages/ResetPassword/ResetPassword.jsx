@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useSearchParams, useNavigate, Link, useLocation } from "react-router-dom";
-import { isCapacitorNative, mobileResetPassword, resetPassword } from "../../api/auth.api";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { resetPassword } from "../../api/auth.api";
 import { useToast } from "../../components/Toast/ToastContext";
 import PasswordInput from "../../components/PasswordInput/PasswordInput";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter/PasswordStrengthMeter";
@@ -19,28 +19,21 @@ function clientPasswordError(password) {
 export default function ResetPassword() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const location = useLocation();
     const { showToast } = useToast();
 
     const token = searchParams.get("token") || "";
-    const resetToken = location.state?.resetToken || "";
-    const hasResetAuthorization = isCapacitorNative ? Boolean(resetToken) : Boolean(token);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    if (!hasResetAuthorization) {
+    if (!token) {
         return (
             <div className="auth-screen">
                 <div className="auth-card">
-                    <h1 className="auth-heading">{isCapacitorNative ? "Reset verification required" : "Invalid reset link"}</h1>
-                    <p className="auth-sub">
-                        {isCapacitorNative
-                            ? "Verify the reset code before choosing a new password."
-                            : "This password reset link is missing or incomplete."}
-                    </p>
+                    <h1 className="auth-heading">Invalid reset link</h1>
+                    <p className="auth-sub">This password reset link is missing or incomplete.</p>
                     <Link to="/forgot-password" className="btn btn-primary auth-submit" style={{ textAlign: "center" }}>
                         Go there now
                     </Link>
@@ -59,14 +52,10 @@ export default function ResetPassword() {
 
         setSubmitting(true);
         try {
-            if (isCapacitorNative) {
-                await mobileResetPassword({ resetToken, newPassword });
-            } else {
-                await resetPassword({ token, newPassword });
-            }
+            await resetPassword({ token, newPassword });
             setSuccess(true);
             showToast("Password reset — you can sign in now.", { type: "success" });
-            window.setTimeout(() => navigate("/login", { replace: true }), 1800);
+            window.setTimeout(() => navigate("/login"), 1800);
         } catch (err) {
             setError(err.message || "Could not reset password");
         } finally {

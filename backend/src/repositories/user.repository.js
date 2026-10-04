@@ -147,21 +147,6 @@ async function updateById(id, patch) {
     return mapUser(data)
 }
 
-async function consumeOtpIfCurrent({ id, otpHash, purpose, maxAttempts, patch }) {
-    const { data, error } = await supabase
-        .from("users")
-        .update(toColumns(patch))
-        .eq("id", id)
-        .eq("otp_hash", otpHash)
-        .eq("otp_purpose", purpose)
-        .lt("otp_attempts", maxAttempts)
-        .gt("otp_expiry", new Date().toISOString())
-        .select(COLUMNS)
-        .maybeSingle()
-    if (error) throw error
-    return mapUser(data)
-}
-
 async function updatePasswordWithResetToken({ id, tokenHash, password, tokenVersion }) {
     const { data, error } = await supabase
         .from("users")
@@ -262,7 +247,6 @@ module.exports = {
     existsByEmail,
     create,
     updateById,
-    consumeOtpIfCurrent,
     updatePasswordWithResetToken,
     getLikedTrackIds,
     isTrackLiked,

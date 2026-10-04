@@ -1,11 +1,5 @@
 import { api } from "./axios";
 
-export const isCapacitorNative = typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.();
-
-function apiEndpointForMobile(path) {
-  return isCapacitorNative ? `/mobile${path}` : path;
-}
-
 // Normalizes an axios error into a plain Error carrying the backend's actual
 // message and field-level errors instead of axios's generic error text.
 function normalizeAuthError(err) {
@@ -24,8 +18,7 @@ function normalizeAuthError(err) {
 
 export async function registerUser({ username, email, password, role, age, acceptedTerms }) {
   try {
-    const endpoint = apiEndpointForMobile("/auth/register");
-    const { data } = await api.post(endpoint, {
+    const { data } = await api.post("/auth/register", {
       username,
       email,
       password,
@@ -41,8 +34,7 @@ export async function registerUser({ username, email, password, role, age, accep
 
 export async function loginUser({ identifier, password, rememberMe }) {
   try {
-    const endpoint = apiEndpointForMobile("/auth/login");
-    const { data } = await api.post(endpoint, {
+    const { data } = await api.post("/auth/login", {
       username: identifier,
       email: identifier,
       password,
@@ -60,8 +52,7 @@ export async function loginUser({ identifier, password, rememberMe }) {
 
 export async function resendOtp({ email, purpose = "verify-email" }) {
   try {
-    const endpoint = apiEndpointForMobile("/auth/resend-otp");
-    const { data } = await api.post(endpoint, { email, purpose });
+    const { data } = await api.post("/auth/resend-otp", { email, purpose });
     return data;
   } catch (err) {
     throw normalizeAuthError(err);
@@ -70,8 +61,7 @@ export async function resendOtp({ email, purpose = "verify-email" }) {
 
 export async function verifyOtp({ email, otp, purpose, rememberMe }) {
   try {
-    const endpoint = apiEndpointForMobile("/auth/verify-otp");
-    const { data } = await api.post(endpoint, { email, otp, purpose, rememberMe });
+    const { data } = await api.post("/auth/verify-otp", { email, otp, purpose, rememberMe });
     return data;
   } catch (err) {
     throw normalizeAuthError(err);
@@ -80,62 +70,7 @@ export async function verifyOtp({ email, otp, purpose, rememberMe }) {
 
 export async function forgotPassword({ email }) {
   try {
-    const endpoint = apiEndpointForMobile("/auth/forgot-password");
-    const { data } = await api.post(endpoint, { email });
-    return data;
-  } catch (err) {
-    throw normalizeAuthError(err);
-  }
-}
-
-export async function mobileRegisterUser(payload) {
-  try {
-    const { data } = await api.post("/mobile/auth/register", payload);
-    return data;
-  } catch (err) {
-    throw normalizeAuthError(err);
-  }
-}
-
-export async function mobileVerifyOtp({ email, otp, purpose }) {
-  try {
-    const { data } = await api.post("/mobile/auth/verify-otp", { email, otp, purpose });
-    return data;
-  } catch (err) {
-    throw normalizeAuthError(err);
-  }
-}
-
-export async function mobileResendOtp({ email, purpose = "verify-email" }) {
-  try {
-    const { data } = await api.post("/mobile/auth/resend-otp", { email, purpose });
-    return data;
-  } catch (err) {
-    throw normalizeAuthError(err);
-  }
-}
-
-export async function mobileForgotPassword({ email }) {
-  try {
-    const { data } = await api.post("/mobile/auth/forgot-password", { email });
-    return data;
-  } catch (err) {
-    throw normalizeAuthError(err);
-  }
-}
-
-export async function mobileVerifyResetOtp({ email, otp }) {
-  try {
-    const { data } = await api.post("/mobile/auth/verify-reset-otp", { email, otp });
-    return data;
-  } catch (err) {
-    throw normalizeAuthError(err);
-  }
-}
-
-export async function mobileResetPassword({ resetToken, newPassword }) {
-  try {
-    const { data } = await api.post("/mobile/auth/reset-password", { resetToken, newPassword });
+    const { data } = await api.post("/auth/forgot-password", { email });
     return data;
   } catch (err) {
     throw normalizeAuthError(err);
@@ -144,8 +79,7 @@ export async function mobileResetPassword({ resetToken, newPassword }) {
 
 export async function resetPassword({ token, newPassword }) {
   try {
-    const endpoint = apiEndpointForMobile("/auth/reset-password");
-    const { data } = await api.post(endpoint, { token, newPassword });
+    const { data } = await api.post("/auth/reset-password", { token, newPassword });
     return data;
   } catch (err) {
     throw normalizeAuthError(err);

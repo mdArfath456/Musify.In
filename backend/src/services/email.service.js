@@ -9,7 +9,8 @@ const EMAILJS_SEND_URL = "https://api.emailjs.com/api/v1.0/email/send";
 
 const OTP_EXPIRY_MINUTES = Number(process.env.OTP_EXPIRY_MINUTES || 10);
 
-const WEB_PURPOSE_CONFIG = {
+// purpose -> which EmailJS template to use, and how to describe it in-mail.
+const PURPOSE_CONFIG = {
     "verify-email": {
         templateEnvVar: "EMAILJS_VERIFY_TEMPLATE_ID",
         subject: "Verify your Musify account",
@@ -24,34 +25,19 @@ const WEB_PURPOSE_CONFIG = {
     },
 };
 
-const MOBILE_PURPOSE_CONFIG = {
-    "verify-email": {
-        templateEnvVar: "MOBILE_EMAILJS_VERIFY_TEMPLATE_ID",
-        subject: "Verify your Musify account",
-        heading: "Verify your email",
-        intro: "Use this code to verify your Musify account."
-    },
-    "first-login": {
-        templateEnvVar: "MOBILE_EMAILJS_FIRST_LOGIN_TEMPLATE_ID",
-        subject: "Confirm your first Musify login",
-        heading: "Confirm it's you",
-        intro: "Use this code to finish signing in to Musify for the first time on this device."
-    },
-    "password-reset": {
-        templateEnvVar: "MOBILE_EMAILJS_RESET_OTP_TEMPLATE_ID",
-        subject: "Reset your Musify password",
-        heading: "Reset your password",
-        intro: "Use this code to reset your Musify password."
-    },
-};
-
 function buildPlainBody({ heading, intro, otp }) {
     return `${heading}\n\n${intro}\n\nYour Musify verification code: ${otp}\n\nThis code expires in ${OTP_EXPIRY_MINUTES} minutes. If you didn't request this, you can safely ignore this email — never share this code with anyone, including anyone claiming to be Musify support.`;
 }
 
-async function sendViaEmailJs({ serviceId, publicKey, privateKey, templateId, templateParams }) {
+async function sendViaEmailJs({ templateId, templateParams }) {
+    const serviceId = process.env.EMAILJS_SERVICE_ID;
+    const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+    const privateKey = process.env.EMAILJS_PRIVATE_KEY;
+
     if (!serviceId || !publicKey || !privateKey) {
-        throw new Error("EmailJS is not configured: service ID, public key and private key are all required");
+        throw new Error(
+            "EmailJS is not configured: EMAILJS_SERVICE_ID, EMAILJS_PUBLIC_KEY and EMAILJS_PRIVATE_KEY are all required"
+        );
     }
     if (!templateId) {
         throw new Error("Missing EmailJS template id for this OTP purpose");
@@ -63,6 +49,9 @@ async function sendViaEmailJs({ serviceId, publicKey, privateKey, templateId, te
         body: JSON.stringify({
             service_id: serviceId,
             template_id: templateId,
+            // Server-side calls must run in EmailJS "strict mode" — the
+            // private key proves this request came from our backend, not
+            // an arbitrary browser, so origin allow-listing isn't needed.
             user_id: publicKey,
             accessToken: privateKey,
             template_params: templateParams
@@ -78,7 +67,7 @@ async function sendViaEmailJs({ serviceId, publicKey, privateKey, templateId, te
 }
 
 async function sendOtpEmail(to, otp, purpose) {
-    const config = WEB_PURPOSE_CONFIG[purpose];
+    const config = PURPOSE_CONFIG[purpose];
     if (!config) throw new Error(`Unknown OTP purpose: ${purpose}`);
 
     const templateId = process.env[config.templateEnvVar];
@@ -96,6 +85,8 @@ async function sendOtpEmail(to, otp, purpose) {
         process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_PUBLIC_KEY && process.env.EMAILJS_PRIVATE_KEY;
 
     if (!hasEmailJsConfig) {
+        // Local dev fallback only — never gate production behavior on this,
+        // and never log an OTP in production so it can't leak into shared logs.
         if (process.env.NODE_ENV !== "production") {
             console.log(
                 `[email:dev-fallback] To: ${to} | Purpose: ${purpose} | OTP: ${otp}\n${buildPlainBody({ ...config, otp })}`
@@ -105,52 +96,7 @@ async function sendOtpEmail(to, otp, purpose) {
         throw new Error("Email delivery is not configured");
     }
 
-    return sendViaEmailJs({
-        serviceId: process.env.EMAILJS_SERVICE_ID,
-        publicKey: process.env.EMAILJS_PUBLIC_KEY,
-        privateKey: process.env.EMAILJS_PRIVATE_KEY,
-        templateId,
-        templateParams
-    });
-}
-
-async function sendMobileOtpEmail(to, otp, purpose) {
-    const config = MOBILE_PURPOSE_CONFIG[purpose];
-    if (!config) throw new Error(`Unknown mobile OTP purpose: ${purpose}`);
-
-    const templateId = process.env[config.templateEnvVar];
-    const templateParams = {
-        to_email: to,
-        username: to.split("@")[0],
-        otp,
-        expiry_minutes: OTP_EXPIRY_MINUTES,
-        subject: config.subject,
-        heading: config.heading,
-        intro: config.intro
-    };
-
-    const hasEmailJsConfig =
-        process.env.MOBILE_EMAILJS_SERVICE_ID &&
-        process.env.MOBILE_EMAILJS_PUBLIC_KEY &&
-        process.env.MOBILE_EMAILJS_PRIVATE_KEY;
-
-    if (!hasEmailJsConfig) {
-        if (process.env.NODE_ENV !== "production") {
-            console.log(
-                `[mobile-email:dev-fallback] To: ${to} | Purpose: ${purpose} | OTP: ${otp}\n${buildPlainBody({ ...config, otp })}`
-            );
-            return { devFallback: true };
-        }
-        throw new Error("Mobile EmailJS delivery is not configured");
-    }
-
-    return sendViaEmailJs({
-        serviceId: process.env.MOBILE_EMAILJS_SERVICE_ID,
-        publicKey: process.env.MOBILE_EMAILJS_PUBLIC_KEY,
-        privateKey: process.env.MOBILE_EMAILJS_PRIVATE_KEY,
-        templateId,
-        templateParams
-    });
+    return sendViaEmailJs({ templateId, templateParams });
 }
 
 async function sendPasswordResetLinkEmail(to, resetToken) {
@@ -187,23 +133,7 @@ async function sendPasswordResetLinkEmail(to, resetToken) {
         throw new Error("Missing EMAILJS_RESET_LINK_TEMPLATE_ID");
     }
 
-    return sendViaEmailJs({
-        serviceId: process.env.EMAILJS_SERVICE_ID,
-        publicKey: process.env.EMAILJS_PUBLIC_KEY,
-        privateKey: process.env.EMAILJS_PRIVATE_KEY,
-        templateId,
-        templateParams
-    });
+    return sendViaEmailJs({ templateId, templateParams });
 }
 
-async function sendMobilePasswordResetOtpEmail(to, otp) {
-    return sendMobileOtpEmail(to, otp, "password-reset");
-}
-
-module.exports = {
-    sendOtpEmail,
-    sendPasswordResetLinkEmail,
-    sendMobileOtpEmail,
-    sendMobilePasswordResetOtpEmail,
-    OTP_EXPIRY_MINUTES
-};
+module.exports = { sendOtpEmail, sendPasswordResetLinkEmail, OTP_EXPIRY_MINUTES };
