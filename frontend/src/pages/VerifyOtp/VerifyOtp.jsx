@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../components/Toast/ToastContext";
-import { resendOtp } from "../../api/auth.api";
+import { mobileVerifyResetOtp, resendOtp } from "../../api/auth.api";
 import OtpInput from "../../components/OtpInput/OtpInput";
 import "../../styles/auth.css";
 import "./VerifyOtp.css";
@@ -24,6 +24,13 @@ const COPY = {
     successMessage: "Welcome to Musify.",
     submitLabel: "Confirm & continue",
   },
+  "password-reset": {
+    heading: "Reset your password",
+    sub: (masked) => `We sent a 6-digit reset code to ${masked || "your email"}.`,
+    notice: "Enter the code to continue resetting your password.",
+    successMessage: "Code verified.",
+    submitLabel: "Verify code",
+  },
 };
 
 export default function VerifyOtp() {
@@ -34,7 +41,7 @@ export default function VerifyOtp() {
 
   const email = state?.email || "";
   const maskedEmail = state?.maskedEmail || "";
-  const purpose = state?.purpose === "first-login" ? "first-login" : "verify-email";
+  const purpose = ["first-login", "password-reset"].includes(state?.purpose) ? state.purpose : "verify-email";
   const rememberMe = Boolean(state?.rememberMe);
 
   const [otp, setOtp] = useState("");
@@ -59,9 +66,13 @@ export default function VerifyOtp() {
       setError("");
       setSubmitting(true);
       try {
-        const data = await verifyOtp({ email, otp: code, purpose, rememberMe });
+        const data = purpose === "password-reset"
+          ? await mobileVerifyResetOtp({ email, otp: code })
+          : await verifyOtp({ email, otp: code, purpose, rememberMe });
         showToast(data.message || copy.successMessage, { type: "success" });
-        if (purpose === "first-login") {
+        if (purpose === "password-reset") {
+          navigate("/reset-password", { replace: true, state: { resetToken: data.resetToken } });
+        } else if (purpose === "first-login") {
           navigate(data.user?.role === "artist" ? "/studio" : "/library", { replace: true });
         } else {
           navigate("/login", { replace: true, state: { justVerified: true } });

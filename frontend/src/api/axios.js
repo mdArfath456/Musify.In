@@ -7,10 +7,16 @@ import { API_BASE_URL } from "../config";
 // expired/invalid session — we have to inspect the response body itself.
 const AUTH_FAILURE_MESSAGES = ["Unauthorized", "You don't have any access"];
 
+const isCapacitorNative = typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.();
+const platformHeaderValue = isCapacitorNative ? "mobile" : "web";
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   timeout: 20000,
+  headers: {
+    "X-Musify-Platform": platformHeaderValue,
+  },
 });
 
 let onAuthFailure = null;

@@ -12,10 +12,16 @@ const {
 } = require("../utils/validators")
 const { generateOtp, hashOtp, otpExpiryDate, MAX_OTP_ATTEMPTS } = require("../utils/otp")
 const { generateResetToken, hashResetToken, resetTokenExpiryDate } = require("../utils/reset-token")
-const { sendOtpEmail, sendPasswordResetLinkEmail } = require("../services/email.service")
+const {
+    sendOtpEmail,
+    sendPasswordResetLinkEmail,
+    sendMobileOtpEmail,
+    sendMobilePasswordResetOtpEmail
+} = require("../services/email.service")
 const { JWT_ISSUER, JWT_AUDIENCE } = require("../middlewares/auth.middleware")
 
 const OTP_PURPOSES = ["verify-email", "first-login"]
+const MOBILE_OTP_PURPOSES = ["verify-email", "password-reset"]
 
 // "a****@gmail.com" — enough for the person to recognize their own inbox
 // without fully exposing it on an unauthenticated screen.
@@ -252,6 +258,320 @@ const resendOtp = async (req, res) => {
     }
 }
 
+const mobileRegisterUser = async (req, res) => {
+    try {
+        let { username, email, password, role = "user", age, acceptedTerms } = req.body
+
+        username = typeof username === "string" ? username.trim().toLowerCase() : username
+        email = typeof email === "string" ? email.trim().toLowerCase() : email
+
+        const errors = {
+            username: validateUsername(username),
+            email: validateEmail(email),
+            password: validatePassword(password),
+            role: validateRole(role),
+            age: validateAge(age),
+            acceptedTerms: validateTerms(acceptedTerms)
+        }
+        const hasErrors = Object.values(errors).some(Boolean)
+        if (hasErrors) {
+            return res.status(400).json({
+                message: "Please fix the highlighted fields",
+                errors
+            })
+        }
+
+        const isUserExist = await userRepository.findByUsernameOrEmail({ username, email })
+        if (isUserExist) {
+            const conflictField = isUserExist.email === email ? "email" : "username"
+            return res.status(409).json({
+                message: "An account with that email or username already exists",
+                errors: { [conflictField]: "Already in use" }
+            })
+        }
+
+        const hashPassword = await bcrypt.hash(password, BCRYPT_ROUNDS)
+        const otp = generateOtp()
+
+        const user = await userRepository.create({
+            username,
+            email,
+            password: hashPassword,
+            role,
+            age: age || null,
+            acceptedTerms: true,
+            isVerified: false,
+            otpHash: hashOtp(otp),
+            otpPurpose: "verify-email",
+            otpExpiry: otpExpiryDate()
+        })
+
+        try {
+            await sendMobileOtpEmail(user.email, otp, "verify-email")
+        } catch (err) {
+            console.error("Failed to send mobile verification OTP email:", err.message)
+            return res.status(502).json({
+                message: "Your account was created, but we could not deliver the OTP. Please use resend code.",
+                requiresOtp: true,
+                emailDeliveryFailed: true,
+                purpose: "verify-email",
+                email: user.email,
+                maskedEmail: maskEmail(user.email)
+            })
+        }
+
+        return res.status(201).json({
+            message: "Account created. We've sent a verification code to your email.",
+            requiresOtp: true,
+            purpose: "verify-email",
+            email: user.email,
+            maskedEmail: maskEmail(user.email),
+            user: publicUser(user)
+        })
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+const mobileVerifyOtp = async (req, res) => {
+    try {
+        const { email, otp, purpose = "verify-email", rememberMe } = req.body
+        if (!email || !otp || !purpose) {
+            return res.status(400).json({ message: "Email, code, and purpose are required" })
+        }
+        if (purpose !== "verify-email" && purpose !== "first-login") {
+            return res.status(400).json({ message: "Invalid OTP purpose" })
+        }
+
+        const genericInvalid = () => res.status(400).json({ message: "Invalid or expired code" })
+        const user = await userRepository.findByEmail(email.trim().toLowerCase())
+        if (!user || !user.otpHash || user.otpPurpose !== purpose) return genericInvalid()
+
+        if (user.otpAttempts >= MAX_OTP_ATTEMPTS) {
+            return res.status(429).json({ message: "Too many attempts. Please request a new code." })
+        }
+
+        if (user.otpExpiry < new Date()) {
+            return res.status(400).json({ message: "This verification code has expired. Please request a new code." })
+        }
+
+        if (hashOtp(otp) !== user.otpHash) {
+            await userRepository.updateById(user.id, { otpAttempts: user.otpAttempts + 1 })
+            return res.status(400).json({ message: "Invalid verification code. Please try again." })
+        }
+
+        const update = {
+            otpHash: null,
+            otpPurpose: null,
+            otpExpiry: null,
+            otpAttempts: 0
+        }
+        if (purpose === "verify-email") update.isVerified = true
+        else update.firstLoginVerified = true
+
+        const updated = await userRepository.consumeOtpIfCurrent({
+            id: user.id,
+            otpHash: user.otpHash,
+            purpose,
+            maxAttempts: MAX_OTP_ATTEMPTS,
+            patch: update
+        })
+        if (!updated) return genericInvalid()
+
+        if (purpose === "first-login") {
+            issueSessionCookie(res, updated, Boolean(rememberMe))
+            return res.status(200).json({
+                message: "Logged in successfully",
+                verified: true,
+                user: publicUser(updated)
+            })
+        }
+
+        return res.status(200).json({
+            message: "Email verified successfully. You can now log in.",
+            verified: true,
+            user: publicUser(updated)
+        })
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+const mobileResendOtp = async (req, res) => {
+    try {
+        const { email, purpose = "verify-email" } = req.body
+        const generic = { message: "If that account is eligible, a new code has been sent." }
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" })
+        }
+        if (!MOBILE_OTP_PURPOSES.includes(purpose)) return res.status(400).json({ message: "Invalid OTP purpose" })
+
+        const user = await userRepository.findByEmail(email.trim().toLowerCase())
+        if (!user) return res.status(200).json(generic)
+        if (purpose === "verify-email" && user.isVerified) return res.status(200).json(generic)
+        if (purpose === "first-login" && (!user.isVerified || user.firstLoginVerified)) {
+            return res.status(200).json(generic)
+        }
+
+        const otp = generateOtp()
+        await userRepository.updateById(user.id, {
+            otpHash: hashOtp(otp),
+            otpPurpose: purpose,
+            otpExpiry: otpExpiryDate(),
+            otpAttempts: 0,
+            resetTokenHash: null,
+            resetTokenExpiresAt: null
+        })
+
+        try {
+            if (purpose === "password-reset") {
+                await sendMobilePasswordResetOtpEmail(user.email, otp)
+            } else {
+                await sendMobileOtpEmail(user.email, otp, purpose)
+            }
+        } catch (err) {
+            console.error("Failed to send mobile OTP email:", err.message)
+            return res.status(502).json({ message: "We could not deliver the OTP. Please try again." })
+        }
+
+        return res.status(200).json(generic)
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+const mobileForgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body
+        if (!email) return res.status(400).json({ message: "Email is required" })
+
+        const user = await userRepository.findByEmail(email.trim().toLowerCase())
+        const generic = { message: "If that account exists, a password reset code has been sent." }
+        if (!user) return res.status(200).json(generic)
+
+        const otp = generateOtp()
+        await userRepository.updateById(user.id, {
+            otpHash: hashOtp(otp),
+            otpPurpose: "password-reset",
+            otpExpiry: otpExpiryDate(),
+            otpAttempts: 0,
+            resetTokenHash: null,
+            resetTokenExpiresAt: null
+        })
+
+        try {
+            await sendMobilePasswordResetOtpEmail(user.email, otp)
+        } catch (err) {
+            console.error("Failed to send mobile password reset OTP email:", err.message)
+            return res.status(502).json({ message: "We could not deliver the reset code. Please try again." })
+        }
+
+        return res.status(200).json(generic)
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+const mobileVerifyResetOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body
+        if (!email || !otp) {
+            return res.status(400).json({ message: "Email and code are required" })
+        }
+
+        const genericInvalid = () => res.status(400).json({ message: "Invalid or expired reset code" })
+        const user = await userRepository.findByEmail(email.trim().toLowerCase())
+        if (!user || !user.otpHash || user.otpPurpose !== "password-reset") return genericInvalid()
+
+        if (user.otpAttempts >= MAX_OTP_ATTEMPTS) {
+            return res.status(429).json({ message: "Too many attempts. Please request a new code." })
+        }
+
+        if (user.otpExpiry < new Date()) {
+            return res.status(400).json({ message: "This reset code has expired. Please request a new one." })
+        }
+
+        if (hashOtp(otp) !== user.otpHash) {
+            await userRepository.updateById(user.id, { otpAttempts: user.otpAttempts + 1 })
+            return res.status(400).json({ message: "Invalid reset code. Please try again." })
+        }
+
+        const resetToken = generateResetToken()
+        const resetTokenHash = hashResetToken(resetToken)
+        const resetTokenExpiresAt = resetTokenExpiryDate()
+
+        const updated = await userRepository.consumeOtpIfCurrent({
+            id: user.id,
+            otpHash: user.otpHash,
+            purpose: "password-reset",
+            maxAttempts: MAX_OTP_ATTEMPTS,
+            patch: {
+            resetTokenHash,
+            resetTokenExpiresAt,
+            otpHash: null,
+            otpPurpose: null,
+            otpExpiry: null,
+            otpAttempts: 0
+            }
+        })
+        if (!updated) return genericInvalid()
+
+        return res.status(200).json({
+            message: "Code verified. You can now set a new password.",
+            verified: true,
+            resetToken,
+            email: updated.email
+        })
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+const mobileResetPassword = async (req, res) => {
+    try {
+        const { resetToken, newPassword } = req.body
+        if (!resetToken || !newPassword) {
+            return res.status(400).json({ message: "Reset token and new password are required" })
+        }
+
+        const passwordError = validatePassword(newPassword)
+        if (passwordError) {
+            return res.status(400).json({ message: passwordError, errors: { newPassword: passwordError } })
+        }
+
+        const tokenHash = hashResetToken(resetToken)
+        const user = await userRepository.findByResetTokenHash(tokenHash)
+        if (!user) return res.status(400).json({ message: "That reset code is invalid or expired. Request a new one." })
+
+        const sameAsBefore = await bcrypt.compare(newPassword, user.password)
+        if (sameAsBefore) {
+            return res.status(400).json({
+                message: "New password must be different from your current password",
+                errors: { newPassword: "Must be different from your current password" }
+            })
+        }
+
+        const updated = await userRepository.updatePasswordWithResetToken({
+            id: user.id,
+            tokenHash,
+            password: await bcrypt.hash(newPassword, BCRYPT_ROUNDS),
+            tokenVersion: user.tokenVersion + 1
+        })
+        if (!updated) return res.status(400).json({ message: "That reset code is invalid or expired. Request a new one." })
+
+        await userRepository.updateById(updated.id, {
+            otpHash: null,
+            otpPurpose: null,
+            otpExpiry: null,
+            otpAttempts: 0
+        })
+
+        return res.status(200).json({ message: "Password updated successfully. You can now log in." })
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
 const userLogin = async (req, res) => {
     try {
         const { username, email, password, rememberMe } = req.body
@@ -343,6 +663,62 @@ const userLogin = async (req, res) => {
             message: "Logged in successfully",
             user: publicUser(afterPassword)
         })
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+const mobileLogin = async (req, res) => {
+    try {
+        const { username, email, password, rememberMe } = req.body
+        const identifierUsername = typeof username === "string" ? username.trim().toLowerCase() : username
+        const identifierEmail = typeof email === "string" ? email.trim().toLowerCase() : email
+        if (!password || (!identifierUsername && !identifierEmail)) {
+            return res.status(400).json({ message: "Username/email and password are required" })
+        }
+
+        const user = await userRepository.findByUsernameOrEmail({
+            username: identifierUsername,
+            email: identifierEmail
+        })
+        const genericFailure = () => res.status(401).json({ message: "Invalid username/email or password" })
+        if (!user || !(await bcrypt.compare(password, user.password))) return genericFailure()
+
+        const purpose = user.isVerified ? "first-login" : "verify-email"
+        if (!user.isVerified || !user.firstLoginVerified) {
+            const otp = generateOtp()
+            const withOtp = await userRepository.updateById(user.id, {
+                otpHash: hashOtp(otp),
+                otpPurpose: purpose,
+                otpExpiry: otpExpiryDate(),
+                otpAttempts: 0
+            })
+            try {
+                await sendMobileOtpEmail(withOtp.email, otp, purpose)
+            } catch (err) {
+                console.error("Failed to send mobile login OTP email:", err.message)
+                return res.status(502).json({
+                    message: "We could not deliver the verification code. Please try again.",
+                    requiresOtp: true,
+                    emailDeliveryFailed: true,
+                    purpose,
+                    email: withOtp.email,
+                    maskedEmail: maskEmail(withOtp.email)
+                })
+            }
+            return res.status(user.isVerified ? 200 : 403).json({
+                message: user.isVerified
+                    ? "We've sent a one-time verification code to your email."
+                    : "Please verify your email to continue.",
+                requiresOtp: true,
+                purpose,
+                email: withOtp.email,
+                maskedEmail: maskEmail(withOtp.email)
+            })
+        }
+
+        issueSessionCookie(res, user, Boolean(rememberMe))
+        return res.status(200).json({ message: "Logged in successfully", user: publicUser(user) })
     } catch (error) {
         return res.status(500).json({ message: "Internal server error" })
     }
@@ -464,9 +840,16 @@ module.exports = {
     registerUser,
     verifyOtp,
     resendOtp,
+    mobileRegisterUser,
+    mobileVerifyOtp,
+    mobileResendOtp,
+    mobileLogin,
     userLogin,
     forgotPassword,
     resetPassword,
+    mobileForgotPassword,
+    mobileVerifyResetOtp,
+    mobileResetPassword,
     checkAvailability,
     userLogout,
     logoutAllDevices

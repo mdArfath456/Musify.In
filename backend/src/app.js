@@ -9,6 +9,7 @@ const helmet = require("helmet")
 const dotenv = require("dotenv").config()
 
 const authRoutes = require("./routes/auth.routes")
+const mobileAuthRoutes = require("./routes/mobile.auth.routes")
 
 const musicRoutes = require("./routes/music.routes")
 
@@ -45,6 +46,7 @@ app.use(
 )
 
 app.use("/api/auth", authRoutes)
+app.use("/api/mobile/auth", mobileAuthRoutes)
 
 app.use("/api/music", musicRoutes)
 

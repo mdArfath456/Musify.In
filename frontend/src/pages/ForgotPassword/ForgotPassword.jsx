@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { forgotPassword } from "../../api/auth.api";
+import { Link, useNavigate } from "react-router-dom";
+import { forgotPassword, isCapacitorNative } from "../../api/auth.api";
 import "../../styles/auth.css";
 
 export default function ForgotPassword() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [sent, setSent] = useState(false);
@@ -15,7 +16,11 @@ export default function ForgotPassword() {
         setSubmitting(true);
         try {
             await forgotPassword({ email });
-            setSent(true);
+            if (isCapacitorNative) {
+                navigate("/verify-otp", { state: { email, purpose: "password-reset" } });
+            } else {
+                setSent(true);
+            }
         } catch (err) {
             setError(err.message || "Something went wrong. Try again.");
         } finally {
@@ -30,7 +35,9 @@ export default function ForgotPassword() {
                     <div className="auth-wordmark" aria-label="Musify"><span className="brand-mark">M</span><span>MUSIFY</span></div>
                 </div>
                 <h1 className="auth-heading">Reset your password</h1>
-                <p className="auth-sub">We'll email you a secure link to reset it.</p>
+                <p className="auth-sub">
+                    {isCapacitorNative ? "We'll email you a code to reset it." : "We'll email you a secure link to reset it."}
+                </p>
 
                 {sent ? (
                     <>
@@ -56,7 +63,7 @@ export default function ForgotPassword() {
                         </div>
                         {error && <p className="error-text">{error}</p>}
                         <button className="btn btn-primary auth-submit" type="submit" disabled={submitting}>
-                            {submitting ? "Sending…" : "Send reset link"}
+                            {submitting ? "Sending…" : isCapacitorNative ? "Send reset code" : "Send reset link"}
                         </button>
                     </form>
                 )}
