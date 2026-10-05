@@ -10,6 +10,14 @@ import { usePlayer } from "../../context/PlayerContext";
 import { ArrowUpRight, Play } from "lucide-react";
 import "./Library.css";
 
+function getTimeGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  if (hour < 21) return "Good evening";
+  return "Good night";
+}
+
 export default function Library() {
   const { user } = useAuth();
   const { playTrack } = usePlayer();
@@ -17,6 +25,7 @@ export default function Library() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
+  const [greeting, setGreeting] = useState(getTimeGreeting);
 
   useEffect(() => {
     let cancelled = false;
@@ -33,6 +42,11 @@ export default function Library() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    const greetingTimer = window.setInterval(() => setGreeting(getTimeGreeting()), 60_000);
+    return () => window.clearInterval(greetingTimer);
   }, []);
 
   const filteredTracks = useMemo(() => {
@@ -53,7 +67,7 @@ export default function Library() {
           <section className="library-hero">
             <div className="library-hero-copy">
               <span className="eyebrow">YOUR SOUNDTRACK</span>
-              <h2>Good evening, {user?.username || "listener"}.</h2>
+              <h2>{greeting}, {user?.username || "listener"}.</h2>
               <p>Pick something that matches your moment.</p>
               <button className="btn btn-primary" onClick={() => playTrack(tracks[0], tracks)}>
                 <Play size={16} fill="currentColor" />
@@ -98,9 +112,9 @@ export default function Library() {
               <span className="section-count">{filteredTracks.length} songs</span>
             </div>
             <div className="track-list">
-            {filteredTracks.map((track, i) => (
-              <MusicCard key={track._id} track={track} index={i} queue={filteredTracks} />
-            ))}
+              {filteredTracks.map((track, i) => (
+                <MusicCard key={track._id} track={track} index={i} queue={filteredTracks} />
+              ))}
             </div>
           </section>
         )}
