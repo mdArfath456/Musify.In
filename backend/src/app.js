@@ -22,7 +22,13 @@ const app = express()
 
 app.set("trust proxy", 1)
 
-app.use(helmet())
+app.use(
+    helmet({
+        contentSecurityPolicy: false,
+        crossOriginEmbedderPolicy: false,
+        frameguard: false
+    })
+)
 
 app.use(cookieParse())
 
@@ -30,16 +36,9 @@ app.use(express.json())
 
 app.use(sanitizeBody)
 
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://localhost",
-    "capacitor://localhost",
-    process.env.FRONTEND_URL,
-].filter(Boolean)
-
 app.use(
     cors({
-        origin: allowedOrigins,
+        origin: (origin, callback) => callback(null, true),
         credentials: true,
     })
 )

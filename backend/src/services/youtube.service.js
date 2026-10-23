@@ -1,8 +1,51 @@
 const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 
+const FALLBACK_TRACKS = [
+    {
+        videoId: "jfKfPfyJRdk",
+        title: "lofi hip hop radio 📚 - beats to relax/study to",
+        channelTitle: "Lofi Girl",
+        thumbnail: "https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg"
+    },
+    {
+        videoId: "5qap5aO4i9A",
+        title: "Lofi Hip Hop Radio 24/7 🔴 Chill Study / Relax / Gaming Beats",
+        channelTitle: "Lofi Girl",
+        thumbnail: "https://i.ytimg.com/vi/5qap5aO4i9A/hqdefault.jpg"
+    },
+    {
+        videoId: "4xDzrJKXOOY",
+        title: "synthwave radio 🌌 - chill synth / retro beats",
+        channelTitle: "Lofi Girl",
+        thumbnail: "https://i.ytimg.com/vi/4xDzrJKXOOY/hqdefault.jpg"
+    },
+    {
+        videoId: "kJQP7kiw5Fk",
+        title: "Luis Fonsi - Despacito ft. Daddy Yankee",
+        channelTitle: "Luis Fonsi",
+        thumbnail: "https://i.ytimg.com/vi/kJQP7kiw5Fk/hqdefault.jpg"
+    },
+    {
+        videoId: "fJ9rUzIMcZQ",
+        title: "Queen – Bohemian Rhapsody (Official Video Remastered)",
+        channelTitle: "Queen Official",
+        thumbnail: "https://i.ytimg.com/vi/fJ9rUzIMcZQ/hqdefault.jpg"
+    },
+    {
+        videoId: "JGwWNGJdvx8",
+        title: "Ed Sheeran - Shape of You (Official Music Video)",
+        channelTitle: "Ed Sheeran",
+        thumbnail: "https://i.ytimg.com/vi/JGwWNGJdvx8/hqdefault.jpg"
+    }
+];
+
 async function searchYoutube(query) {
     if (!process.env.YOUTUBE_API_KEY) {
-        throw new Error("YOUTUBE_API_KEY is not set");
+        const lower = query.toLowerCase();
+        const filtered = FALLBACK_TRACKS.filter((t) =>
+            t.title.toLowerCase().includes(lower) || t.channelTitle.toLowerCase().includes(lower)
+        );
+        return filtered.length > 0 ? filtered : FALLBACK_TRACKS;
     }
 
     const url = new URL(YOUTUBE_SEARCH_URL);

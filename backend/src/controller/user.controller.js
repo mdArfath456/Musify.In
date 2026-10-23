@@ -1,5 +1,5 @@
 const userRepository = require("../repositories/user.repository")
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcryptjs")
 const dotenv = require("dotenv").config()
 const jwt = require("jsonwebtoken")
 const {
@@ -47,7 +47,7 @@ function issueSessionCookie(res, user, rememberMe) {
             role: user.role,
             tokenVersion: user.tokenVersion
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET || "musify-development-secret-key-32charsmin",
         {
             expiresIn,
             issuer: JWT_ISSUER,

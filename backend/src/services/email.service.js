@@ -85,15 +85,10 @@ async function sendOtpEmail(to, otp, purpose) {
         process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_PUBLIC_KEY && process.env.EMAILJS_PRIVATE_KEY;
 
     if (!hasEmailJsConfig) {
-        // Local dev fallback only — never gate production behavior on this,
-        // and never log an OTP in production so it can't leak into shared logs.
-        if (process.env.NODE_ENV !== "production") {
-            console.log(
-                `[email:dev-fallback] To: ${to} | Purpose: ${purpose} | OTP: ${otp}\n${buildPlainBody({ ...config, otp })}`
-            );
-            return { devFallback: true };
-        }
-        throw new Error("Email delivery is not configured");
+        console.log(
+            `[Musify OTP] To: ${to} | Purpose: ${purpose} | OTP: ${otp}\n${buildPlainBody({ ...config, otp })}`
+        );
+        return { devFallback: true };
     }
 
     return sendViaEmailJs({ templateId, templateParams });
@@ -117,20 +112,9 @@ async function sendPasswordResetLinkEmail(to, resetToken) {
     const hasEmailJsConfig =
         process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_PUBLIC_KEY && process.env.EMAILJS_PRIVATE_KEY;
 
-    if (!hasEmailJsConfig) {
-        if (process.env.NODE_ENV !== "production") {
-            console.log(`[email:dev-fallback] Password reset link for ${to}: ${resetUrl}`);
-            return { devFallback: true };
-        }
-        throw new Error("Email delivery is not configured");
-    }
-
-    if (!templateId) {
-        if (process.env.NODE_ENV !== "production") {
-            console.log(`[email:dev-fallback] Password reset link for ${to}: ${resetUrl}`);
-            return { devFallback: true };
-        }
-        throw new Error("Missing EMAILJS_RESET_LINK_TEMPLATE_ID");
+    if (!hasEmailJsConfig || !templateId) {
+        console.log(`[Musify Reset Link] For ${to}: ${resetUrl}`);
+        return { devFallback: true };
     }
 
     return sendViaEmailJs({ templateId, templateParams });

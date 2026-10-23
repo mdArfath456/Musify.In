@@ -1,0 +1,6 @@
+{
+  "name": "Musify",
+  "description": "Musify — Play what moves you. Discover, stream, and create music albums with an AI assistant.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

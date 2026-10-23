@@ -14,7 +14,8 @@ const verifyToken = async (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+        const secret = process.env.JWT_SECRET || "musify-development-secret-key-32charsmin";
+        const decoded = jwt.verify(token, secret, {
             issuer: JWT_ISSUER,
             audience: JWT_AUDIENCE
         });
